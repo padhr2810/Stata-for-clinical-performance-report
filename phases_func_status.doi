@@ -1,0 +1,70 @@
+
+*********************************************************************************************** MEAN ACROSS EVERY CONSULTATION:
+label var PPS "Palliative Performance Score"
+
+** TOTAL:
+summ PPS
+	scalar mean_functional_status = r(mean)
+	dis mean_functional_status
+** RAHENY:
+summ PPS if Hospice == "Raheny"
+	scalar mean_functional_status_rah = r(mean)
+	dis mean_functional_status_rah
+** BLANCH:
+summ PPS if Hospice == "Blanch"
+	scalar mean_functional_status_bla = r(mean)
+	dis mean_functional_status_bla
+
+
+*********************************************************************************************** MEAN PER PATIENT (TOTAL):
+gen 	Date_elapsed = Date
+format  Date_elapsed %10.0g
+
+sort MRN Date_elapsed
+	by MRN: gen n = _n == 1
+
+bysort MRN: egen pps_mean_patient = mean(PPS)
+		replace pps_mean_patient = 0 if n != 1
+			summ pps_mean_patient
+			drop pps_mean_patient
+			scalar pps_agg_patient = r(sum)
+				scalar pps_mean = pps_agg_patient / number_of_patients
+				dis pps_mean
+*** MEAN PER PATIENT (RAHENY):
+bysort MRN: egen pps_mean_patient = mean(PPS)
+		replace pps_mean_patient = 0 if n != 1 | Hospice != "Raheny"
+			summ pps_mean_patient
+			drop pps_mean_patient
+			scalar pps_agg_patient_rah = r(sum)
+				scalar pps_mean_rah = pps_agg_patient_rah / number_of_patients_rah
+				dis pps_mean_rah
+*** MEAN PER PATIENT (BLANCH):
+bysort MRN: egen pps_mean_patient = mean(PPS)
+		replace pps_mean_patient = 0 if n != 1 | Hospice != "Blanch"
+			summ pps_mean_patient
+			drop pps_mean_patient
+			scalar pps_agg_patient_bla = r(sum)
+				scalar pps_mean_bla = pps_agg_patient_bla / number_of_patients_bla
+				dis pps_mean_bla
+
+
+		
+*********************************************************************************************** FUNCTIONAL STATUS: MEAN OF ALL CONSULTATIONS:
+dis mean_functional_status
+dis mean_functional_status_rah
+dis mean_functional_status_bla
+
+*********************************************************************************************** FUNCTIONAL STATUS: MEAN OF ALL PATIENTS:
+dis pps_mean
+dis pps_mean_rah			
+dis pps_mean_bla
+
+
+***********************************************************************************************  assert:
+foreach x in  pps_mean  pps_mean_rah  pps_mean_bla  {
+	assert `x'   >= 1
+	assert `x'   <= 100
+	}
+	*
+
+	

@@ -1,0 +1,32 @@
+
+*********************************************************** 	CREATE VARIABLE: CONSULTATIONS PER PATIENT
+by MRN, sort: gen consult_per_patient = _N
+
+
+*********************************************************** 	REDUCE TO ONE ROW PER PATIENT.
+by MRN: drop if _n > 1
+
+***********************************************************    CALCULATION: MEAN CONSULTATIONS PER PATIENT
+summ consult_per_patient
+scalar mean_consult_per_patient = r(mean)
+
+***********************************************************     RAHENY & BLANCH:
+	summ consult_per_patient if Hospice == "Raheny"
+		scalar mean_consult_per_patient_rah = r(mean)
+	summ consult_per_patient if Hospice == "Blanch"
+		scalar mean_consult_per_patient_bla = r(mean)
+
+		
+		
+***********************************************************
+
+assert  mean_consult_per_patient 	  > 0  &  mean_consult_per_patient 		!=  .
+assert  mean_consult_per_patient_rah  > 0  &  mean_consult_per_patient_rah  !=  .
+assert  mean_consult_per_patient_bla  > 0  &  mean_consult_per_patient_bla  !=  .
+
+assert  ( mean_consult_per_patient_rah  <  mean_consult_per_patient  <  mean_consult_per_patient_bla  ) ///
+		|   ( mean_consult_per_patient_rah  ==  mean_consult_per_patient  ==  mean_consult_per_patient_bla )
+	
+	
+	summ   consult_per_patient
+assert mean_consult_per_patient == r(sum) / r(N)

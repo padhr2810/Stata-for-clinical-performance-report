@@ -1,0 +1,22 @@
+*********************************************************************************** SYMPTOMS
+
+***********************************************   TAB SYMPTOM 1 & SYMPTOM 2 SEPARATELY:
+tab Symptom1
+tab Symptom1 Hospice
+tab Symptom2
+tab Symptom2 Hospice
+
+
+***********************************************  COMBINE SYMPTOM 1 & 2 INTO ONE COLUMN:  
+capture drop n
+gen n = _n
+reshape long Symptom, i(MRN n) j(app) 
+
+***********************************************  TAB ALL IN ONE COLUMN:
+tab Symptom
+tab Symptom Hospice
+
+
+***********************************************   BACK INTO 2 X COLUMNS.
+reshape wide Symptom, i(MRN n) j(app) 
+drop n

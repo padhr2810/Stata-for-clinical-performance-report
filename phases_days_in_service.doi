@@ -1,0 +1,91 @@
+
+************************************************************************************
+************************************************************************************  DAYS IN SERVICE:
+************************************************************************************
+
+
+************************************************************************************  IDENTIFY CURRENT MONTH (in main phases file) 
+gen this_month = 1
+save temp_month.dta, replace
+
+codebook MRN
+************************************************************************************  IDENTIFY CURRENT MONTH (in earlier phases file)
+clear
+import excel "past.xlsx", sheet("past") firstrow
+	gen this_month = 0
+gen 	Date_elapsed = Date
+format  Date_elapsed %10.0g
+
+
+************************************************************************************   APPEND THE FILES
+append using temp_month.dta
+
+	
+************************************************************************************ GET RID OF MRNS NOT PRESENT IN THIS CURRENT TIME PERIOD
+bysort MRN: egen check = max(this_month)
+	drop if check < 1
+codebook MRN
+
+************************************************************************************  NUMBER OF CONSULTATIONS PER PATIENT 
+by MRN: gen N_consult =  _N
+	
+************************************************************************************  KEEP THE FIST AND LAST CONSULTATION FOR EVERYONE 
+sort MRN Date_elapsed
+	by MRN: gen first 	= _n == 1
+	by MRN: gen last 	= _n == _N
+		keep if first == 1  |  last == 1
+
+codebook MRN
+
+
+************************************************************************************  CALCULATE THE NUMBER OF DAYS IN SERVICE 
+gen los  =  .
+
+************************************************************************************  FILL IN FOR PEOPLE WHO HAD ONLY ONE CONSULT
+replace  los =  1  if   N_consult  == 1
+
+
+************************************************************************************  FILL IN FOR PEOPLE WITH > 1 CONSULTATION 
+replace  los  =  Date_elapsed[_n+1]  -  Date_elapsed  if   MRN[_n+1]  ==  MRN
+
+************************************************************************************  FILL IN IF HOSPICE MISSING IN EARLIER SURVEY.
+replace Hospice  =  Hospice[_n+1]  if   MRN[_n+1]  ==  MRN  &  Hospice == ""
+
+************************************************************************************ KEEP THE FIRST OBSERVATION PER PATIENT 
+drop if  MRN  !=  MRN[_n+1]   &  N_consult  !=  1
+
+
+
+************************************************************************************
+************************************************************************************  VISUALISE RESULTS:
+************************************************************************************
+
+tab los
+
+dis num_of_patients 
+	*** Sanity check: this should be the same as the previous table.
+
+summ los, detail
+	scalar los_mean   = r(mean)
+	dis los_mean
+	scalar los_median = r(p50)
+	dis los_median
+	
+summ los if Hospice == "Raheny", detail
+	scalar los_mean_rah = r(mean)
+	dis los_mean_rah
+	scalar los_median_rah  = r(p50)
+	dis los_median_rah
+	
+summ los if Hospice == "Blanch", detail
+	scalar los_mean_bla = r(mean)
+	dis los_mean_bla
+	scalar los_median_bla  = r(p50)
+	dis los_median_bla
+
+
+foreach x in   los_mean  los_mean_bla   los_mean_rah   los_median  los_median_bla   los_median_rah   {
+	assert `x' >= 1
+	assert `x' < .
+	}
+	*

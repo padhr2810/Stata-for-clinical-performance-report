@@ -1,0 +1,112 @@
+************************************************ STEP 3: phases of illness
+* PHASES OF ILLNESS:
+noisily: dis ""  
+noisily: dis "Phase of illness"  
+noisily:  tab Phase
+
+noisily: dis ""  
+noisily: dis "Phase of illness, by hospice"  
+noisily:  tab Phase Hospice , column
+
+************************************************ STEP 4:  Total Problem severity score & mean pain/other/spiritual/carer
+* TOTAL PROBLEM SEVERITY SCORE:
+noisily: dis ""  
+noisily: dis "Mean problem severity score"  
+noisily:  dis %4.2f tpss_mean
+
+noisily: dis ""  
+noisily: dis "Mean problem severity score: Raheny"  
+noisily: dis %4.2f tpss_mean_rah
+noisily: dis ""  
+noisily: dis "Mean problem severity score: Blanchardstown"  
+noisily:  dis %4.2f tpss_mean_bla
+
+
+*************************************************  
+* PAIN PROBLEM:
+noisily: dis ""  
+noisily: dis "Mean pain score"  
+noisily:  dis %4.2f  pain_mean
+
+noisily: dis ""  
+noisily: dis "Mean pain score: Raheny"  
+noisily:  dis %4.2f  pain_mean_rah
+
+noisily: dis ""  
+noisily: dis "Mean pain score: Blanchardstown"  
+noisily:  dis %4.2f  pain_mean_bla
+
+noisily: dis ""  
+noisily: dis "Pain scores by site"  
+noisily:  tab pain Hospice , column
+
+
+* OTHER PROBLEMS:
+noisily: dis ""  
+noisily: dis "Mean 'other problem' score"  
+noisily:  dis %4.2f  other_mean
+
+noisily: dis ""  
+noisily: dis "Mean 'other problem' score: Raheny"  
+noisily:  dis %4.2f  other_mean_rah
+
+noisily: dis ""  
+noisily: dis "Mean 'other problem' score: Blanchardstown"  
+noisily:  dis %4.2f  other_mean_bla
+
+noisily: dis ""  
+noisily: dis "Other symptom scores by site"  
+noisily:  tab other Hospice , column
+
+
+* SPIRITUAL PROBLEMS:
+noisily: dis ""  
+noisily: dis "Mean spiritual problem score"  
+noisily:  dis %4.2f  spirit_mean
+
+noisily: dis ""  
+noisily: dis "Mean spiritual problem score: Raheny"  
+noisily:  dis %4.2f  spirit_mean_rah
+
+noisily: dis ""  
+noisily: dis "Mean spiritual problem score: Blanchardstown"  
+noisily:  dis %4.2f  spirit_mean_bla
+
+noisily: dis ""  
+noisily: dis "Spiritual / psychosocial scores by site"  
+noisily:  tab spirit Hospice , column
+
+
+* CARER PROBLEMS:
+noisily: dis ""  
+noisily: dis "Mean carer problem score"  
+noisily:  dis %4.2f  carer_mean
+
+noisily: dis ""  
+noisily: dis "Mean carer problem score: Raheny"  
+noisily:  dis %4.2f  carer_mean_rah
+
+noisily: dis ""  
+noisily: dis "Mean carer problem score: Blanchardstown"  
+noisily:  dis %4.2f  carer_mean_bla
+
+noisily: dis ""  
+noisily: dis "Carer problem scores by site"  
+noisily:  tab carer Hospice , column
+
+
+* SYMPTOMS
+capture drop n
+gen n = _n
+reshape long Symptom, i(MRN n) j(app) 
+noisily: dis ""  
+noisily: dis "Frequency of symptoms"  
+noisily:  tab Symptom
+
+noisily: dis ""  
+noisily: dis "Frequency of symptoms, by hospice"  
+noisily:  tab Symptom Hospice , column
+
+reshape wide Symptom, i(MRN n) j(app) 
+drop n
+

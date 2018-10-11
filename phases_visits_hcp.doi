@@ -1,0 +1,18 @@
+************************************************ STEP: visit by hcp (nurse / doctor etc)
+
+
+label define hcp 1 "Nursing" 2 "Medical" 3 "Joint visit" ///
+				 4 "Nurs. PC" 5 "Med. PC" 6 "Post death" 
+
+label values Epis hcp
+
+tab Epis
+tab Epis Hospice
+
+
+************************************************  assert:  
+
+summ Epis
+assert r(min) >= 1  
+assert r(max) <= 6  |  r(max) == .
+

@@ -1,0 +1,87 @@
+log close
+
+*************************************************************************** RESULTS LOG.
+	quietly {
+log using phases_results, replace text
+
+noisily: dis ""  
+noisily: dis "PHASES MONTHLY REPORT"
+noisily: display "Date of analysis: $S_TIME $S_DATE"
+
+**************************************************************** NUMBER OF PATIENTS:
+
+noisily: dis ""  
+noisily: dis ""  
+noisily: dis "Number of patients" 
+noisily: dis number_of_patients
+
+* NUMBER OF PATIENTS (RAHENY):
+noisily: dis ""  
+noisily: dis "Number of patients: Raheny" 
+noisily: dis number_of_patients_rah
+
+* NUMBER OF PATIENTS (BLANCH):
+noisily: dis ""  
+noisily: dis "Number of patients: Blanchardstown" 
+noisily: dis number_of_patients_bla
+
+****************************************************************  MEAN AGE:
+noisily: dis ""
+noisily: dis ""
+noisily: dis "Mean age"
+noisily: dis %3.1f  mean_age
+
+noisily: dis ""
+noisily: dis ""
+noisily: dis "Mean age: Blanchardstown"
+noisily: dis %3.1f  mean_age_bla
+
+noisily: dis ""
+noisily: dis ""
+noisily: dis "Mean age: Raheny"
+noisily: dis %3.1f  mean_age_rah
+
+
+****************************************************************  AGE CATEGORIES:
+
+noisily: dis ""
+noisily: dis ""
+noisily: dis "Age categories"
+noisily: tab age_cat
+
+noisily: dis ""
+noisily: dis ""
+noisily: dis "Age categories, by site"
+noisily: tab age_cat Hospice , column
+
+****************************************************************  AGE CATEGORIES:
+
+noisily: tab female
+noisily: tab female   Hospice , column
+noisily: table female age_cat Hospice, contents(freq)
+
+
+noisily: tab diag_cat
+noisily: tab diag_cat  Hospice , column
+noisily: table diag_cat  age_cat Hospice, contents(freq)
+
+
+
+***************************************************************** CONSULTATIONS PER PATIENT:
+noisily: dis ""  
+noisily: dis "Consultations per patient" 
+noisily: dis %4.2f mean_consult_per_patient
+
+* CONSULTATIONS PER PATIENT (RAHENY):
+noisily: dis ""  
+noisily: dis "Consultations per patient: Raheny" 
+noisily: dis %4.2f mean_consult_per_patient_rah
+
+* CONSULTATIONS PER PATIENT (BLANCH):
+noisily: dis ""  
+noisily: dis "Consultations per patient: Blanchardstown" 
+noisily: dis %4.2f mean_consult_per_patient_bla
+
+log close
+	}
+	*

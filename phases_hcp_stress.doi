@@ -1,0 +1,16 @@
+label var Stress "HCP stress"
+
+label define stress 0 "No stress" 1 "Mild" 2 "Moderate" 3 "Severe"
+label values Stress stress
+
+tab Stress
+tab Stress Epis
+tab Stress Phase
+
+tab Stress Hospice
+
+
+**********************************************************   assert
+
+assert Stress >= 0
+assert Stress <= 3  |  Stress == .

@@ -1,0 +1,14 @@
+label var Visit "Visit duration"
+label define duration 0 "Under 30 minutes" 1 "Under 1 hour" 2 "Under 90 minutes" 3 "90 minutes or more"
+label values Visit duration
+
+tab Visit
+tab Visit Hospice
+
+
+**************************************************** assert
+
+summ Visit
+
+assert r(min)  >=  0
+assert r(max)  <=  3

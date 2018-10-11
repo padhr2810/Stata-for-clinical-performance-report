@@ -1,0 +1,43 @@
+import excel "phases.xlsx", sheet("phases") firstrow
+
+************************************************************* SUMMARY STATISTICS FOR "MRN"
+summ MRN
+codebook MRN
+
+************************************************************* TOTAL PATIENTS:
+by MRN, sort: gen num_of_patients = _n == 1
+	replace num_of_patients = sum(num_of_patients)	/*CUMULATIVE SUM*/
+	replace num_of_patients = num_of_patients[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+
+summ num_of_patients
+	scalar number_of_patients = r(mean)
+	dis number_of_patients
+
+************************************************************* RAHENY & BLANCH: NUMBER OF PATIENTS:
+
+***** RAHENY & BLANCH: CONSTRUCT THE COUNT VARIABLES:
+foreach x in rah bla  {
+by MRN, sort: gen num_of_patients_`x' = _n == 1
+	}
+	*
+
+	replace num_of_patients_rah = 0 if Hospice != "Raheny"
+	replace num_of_patients_bla = 0 if Hospice != "Blanch"
+
+
+***** CALCULATION FOR BOTH SITES:
+foreach x in rah bla  {
+	replace num_of_patients_`x' = sum(num_of_patients_`x')	/*CUMULATIVE SUM*/
+	replace num_of_patients_`x' = num_of_patients_`x'[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+summ num_of_patients_`x'
+	scalar number_of_patients_`x' = r(mean)
+	dis number_of_patients_`x'
+	}
+	*
+
+*************************************************************  ASSERT THAT ANALYSIS IS OK:
+assert  num_of_patients > 0  	 &  num_of_patients  != .
+assert  num_of_patients_bla > 0  &  num_of_patients_bla  != .
+assert  num_of_patients_rah > 0  &  num_of_patients_rah  != .
+
+assert  num_of_patients  ==  num_of_patients_bla  +  num_of_patients_rah

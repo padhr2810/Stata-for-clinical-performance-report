@@ -1,0 +1,25 @@
+clear
+log using phases_analysis, append text
+
+** NB NEED TO IMPORT DATA AGAIN.
+
+import excel "phases.xlsx", sheet("phases") firstrow
+
+label define phase 1 "Stable" 2 "Unstable" 3 "Deteriorating"  4 "Terminal" 5 "Bereavement"
+label values Phase phase
+
+
+* PHASES OF ILLNESS:
+tab Phase
+tab Phase Hospice
+
+codebook Phase
+
+************************************************* ASSERT:
+
+	summ Phase
+assert r(max)  <=  5
+assert r(min)  >=  1
+assert r(min)   <  r(mean)  <  r(max)
+
+

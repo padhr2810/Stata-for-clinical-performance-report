@@ -1,0 +1,46 @@
+************************************************ STEP 5: number of consultations (Mean per patient was calculated earlier)
+
+
+
+************************************************ CALCULATE TOTAL NUMBER OF PATIENTS IN EACH SITE:
+by MRN, sort: gen num_of_patients = _n == 1
+	replace num_of_patients = sum(num_of_patients)	/*CUMULATIVE SUM*/
+	replace num_of_patients = num_of_patients[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+** RAHENY PATIENTS:
+by MRN, sort: gen num_of_patients_rah = _n == 1
+	replace num_of_patients_rah = 0 if Hospice != "Raheny"
+	replace num_of_patients_rah = sum(num_of_patients_rah)	/*CUMULATIVE SUM*/
+	replace num_of_patients_rah = num_of_patients_rah[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+** BLANCH PATIENTS:
+by MRN, sort: gen num_of_patients_bla = _n == 1
+	replace num_of_patients_bla = 0 if Hospice != "Blanch"
+	replace num_of_patients_bla = sum(num_of_patients_bla)	/*CUMULATIVE SUM*/
+	replace num_of_patients_bla = num_of_patients_bla[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+
+	
+************************************************ CALCULATE THE TOTAL CONSULTATIONS IN EACH SITE:
+** TOTAL CONSULTATIONS:
+scalar num_consultations   = _N
+	dis num_consultations
+	
+** RAHENY CONSULTATIONS:
+gen N = 0
+replace N = 1 if Hospice == "Raheny"
+	summ N
+	scalar num_consultations_rah = r(sum)
+
+** BLANCH CONSULTATIONS:
+replace N = 0
+replace N = 1 if Hospice == "Blanch"
+	summ N
+	scalar num_consultations_bla = r(sum)
+	
+	drop N
+	
+************************************************  ASSERT:
+
+foreach x in  num_consultations  num_consultations_rah  num_consultations_bla {
+	assert  `x'  >  0
+	assert  `x'  <  .
+	}
+	*

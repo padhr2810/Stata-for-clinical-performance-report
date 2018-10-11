@@ -1,0 +1,20 @@
+
+************************************************ setting
+
+label define setting 1 "Home" 2  "Nursing Home" 3 "Daycare Raheny" 4 "Daycare Blanch" ///
+					 5 "IPU Raheny" 6 "IPU Blanch" 7 "Psychiatric hospital" 8 "Hostel" ///
+					 9 "Outpatient" 10 "Other" 
+
+label values Setting setting
+
+tab Setting
+tab Setting Hospice
+
+
+
+************************************************ assert
+sum Setting
+
+assert r(min) >= 1 
+assert r(max) <= 10
+

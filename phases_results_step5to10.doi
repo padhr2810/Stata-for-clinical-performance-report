@@ -1,0 +1,76 @@
+************************************************ STEP 5: number of consultations (Mean per patient was calculated earlier)
+* NUMBER OF CONSULTATIONS:
+noisily: dis ""  
+noisily: dis "Number of consultations"  
+noisily:  dis  num_consultations
+
+noisily: dis ""  
+noisily: dis "Number of consultations: Raheny"  
+noisily:  dis  num_consultations_rah
+
+noisily: dis ""  
+noisily: dis "Number of consultations: Blanchardstown"  
+noisily: dis  num_consultations_bla
+
+
+************************************************ STEP 6: setting
+* SETTING OF CARE:
+noisily: dis ""  
+noisily: dis "Setting of care"  
+noisily: tab Setting
+
+noisily: dis ""  
+noisily: dis "Setting of care, by hospice"  
+noisily: tab Setting Hospice , column
+
+************************************************ STEP 7: visit by hcp (nurse / doctor etc)
+* HEALTH CARE PROFESSIONALS: DOCTOR, NURSE, ETC:
+noisily: dis ""  
+noisily: dis "Health care professional category"  
+noisily: tab Epis
+
+noisily: dis ""  
+noisily: dis "Health care professional category, by hospice"  
+noisily: tab Epis Hospice , column
+
+************************************************ STEP 8: Functional status.
+* FUNCTIONAL STATUS:
+noisily: dis ""  
+noisily: dis "Functional status"  
+noisily: dis %4.2f  pps_mean
+
+noisily: dis ""  
+noisily: dis "Functional status: Raheny"  
+noisily: dis %4.2f  pps_mean_rah
+
+noisily: dis ""  
+noisily: dis "Functional status: Blanchardstown"  
+noisily: dis %4.2f  pps_mean_bla
+
+************************************************ STEP 9: HCP stress
+* STRESS OF HEALTH CARE PROFESSIONALS:
+noisily: dis ""  
+noisily: dis "Health care professional stress"  
+noisily: tab Stress
+
+noisily: dis ""  
+noisily: dis "Health care professional stress: by profession"  
+noisily: tab Stress Epis
+
+noisily: dis ""  
+noisily: dis "Health care professional stress: by phase"  
+noisily: tab Stress Phase
+
+noisily: dis ""  
+noisily: dis "Health care professional stress: by hospice"  
+noisily: tab Stress Hospice , column
+
+************************************************ STEP 10: VISIT DURATION
+
+noisily: dis ""  
+noisily: dis "Visit duration"  
+noisily: tab Visit
+
+noisily: dis ""  
+noisily: dis "Visit duration: by hospice"  
+noisily: tab Visit Hospice , column

@@ -1,0 +1,71 @@
+
+
+gen today_date = "$S_DATE"
+
+scalar today_date_elapsed = date(today_date, "DMY")
+    dis today_date_elapsed
+
+gen age =  ( today_date_elapsed  -  DoB )  /  365.25
+
+replace age = round(age - 0.5)
+
+
+gen female = .
+	replace  female  = 0  if Sex == "M"
+	replace  female  = 1  if Sex == "F"
+	replace  female  = 2  if Sex == ""
+label define female 0 "Male" 1 "Female"  2 "Unrecorded"
+	label values female female
+	
+rename Code 	diag_cat
+
+********************************* AGE
+
+summ age
+	scalar mean_age = r(mean)
+
+summ age if Hospice  	 ==  "Blanch"
+	scalar mean_age_bla  = r(mean)
+
+summ age if Hospice  	 ==  "Raheny"
+	scalar mean_age_rah  = r(mean)
+
+gen age_cat = .
+	replace age_cat  =  1 if  age < 18
+	replace age_cat  =  2 if  18 <= age & age   <= 29
+	replace age_cat  =  3 if  30 <= age & age   <= 39
+	replace age_cat  =  4 if  40 <= age & age   <= 49
+	replace age_cat  =  5 if  50 <= age & age   <= 59
+	replace age_cat  =  6 if  60 <= age & age   <= 69
+	replace age_cat  =  7 if  70 <= age & age   <= 79
+	replace age_cat  =  8 if  80 <= age & age   <= 89
+	replace age_cat  =  9 if  90 <= age
+
+label define age_cat 1 "Under 18"  2  "18-29"  3  "30-39"  4 "40-49" ///
+					 5  "50-59"  6  "60-69"  7 "70-79"  8  "80-89" 9  "90+"			 
+	label values age_cat  age_cat
+		
+tab age_cat
+tab age_cat Hospice
+
+
+
+********************************* GENDER
+
+tab female
+tab female Hospice
+table female age_cat Hospice, contents(freq)
+
+
+********************************* DIAGNOSIS
+
+tab diag_cat
+tab diag_cat  Hospice
+table diag_cat  age_cat Hospice, contents(freq)
+
+******************************************************************  ASSERT VALUES.
+assert  age > 0
+assert  age < .
+
+assert  Sex  == "M"  |  Sex == "F"  | Sex == ""
+assert  female == 0  |  female == 1 | female == 2

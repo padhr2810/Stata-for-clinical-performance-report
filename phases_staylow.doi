@@ -1,0 +1,125 @@
+** NB NEED TO IMPORT DATA AGAIN.
+clear
+import excel "phases.xlsx", sheet("phases") firstrow
+
+capture log close
+log using phases_analysis, append text
+
+gen 	Date_elapsed = Date
+format  Date_elapsed %10.0g
+sort 	MRN Date_elapsed
+
+rename Pain pain
+rename Other other
+rename Spirit spirit
+rename Carer  carer
+
+
+************************************************************************************
+************************************************************************************  OTHER SYMP  &  PAIN:
+************************************************************************************  drop FROM SEVERE TO 0/1
+
+************************ NUMBER OF CONSULTATIONS PER PATIENT IN THIS MONTH:
+sort MRN Date
+	by MRN: gen N_consult = _N
+
+
+************************ DROP IF ONLY ONE CONSULT.
+drop if  N_consult  == 1
+
+
+************************ KEEP FIRST & LAST OBSERVATIONS IN THE MONTH FOR EACH PATIENT:
+by MRN: drop if _n  !=  1  &  _n !=  _N
+
+
+		foreach x in other  pain   spirit  carer   {
+		
+************************  SPECIFY IF STAYED LOW OR INCREASED. (FOR PEOPLE WITH AT LEAST 2 CONSULTS)
+gen increase_`x'_var = 1 	if (`x' == 0  |  `x' == 1) & MRN[_n+1] == MRN[_n]  & ( `x'[_n+1] == 2 |  `x'[_n+1] == 3 )
+gen staylow_`x'_var  = 1     if (`x' == 0  |  `x' == 1) & MRN[_n+1] == MRN[_n]  & ( `x'[_n+1] == 0 |  `x'[_n+1] == 1 )
+
+
+************************  FOR PEOPLE WITH ONLY 1 CONSULT:  IF WAS LOW, DEEM IT AS "STAYING LOW" (AS STILL LOW AT END OF MONTH)
+replace  staylow_`x'_var  = 1     if (`x' == 2  |  `x' == 3) &  N_consult == 1
+
+************************  TOTAL:
+summ increase_`x'_var
+	scalar increase_scal = r(sum)
+	dis increase_scal
+summ staylow_`x'_var
+	scalar staylow_scal = r(sum)
+	dis staylow_scal
+scalar perc_`x'_staylow = staylow_scal / (increase_scal + staylow_scal )
+	dis perc_`x'_staylow
+
+** RAHENY:
+summ increase_`x'_var if Hospice == "Raheny"
+	scalar increase_scal = r(sum)
+	dis increase_scal
+summ staylow_`x'_var if Hospice == "Raheny"
+	scalar staylow_scal = r(sum)
+	dis staylow_scal
+scalar perc_`x'_staylow_rah = staylow_scal / (increase_scal + staylow_scal )
+	dis perc_`x'_staylow_rah
+
+
+** BLANCH:
+summ increase_`x'_var if Hospice == "Blanch"
+	scalar increase_scal = r(sum)
+	dis increase_scal
+summ staylow_`x'_var if Hospice == "Blanch"
+	scalar staylow_scal = r(sum)
+	dis staylow_scal
+scalar perc_`x'_staylow_bla = staylow_scal / (increase_scal + staylow_scal )
+	dis perc_`x'_staylow_bla
+drop increase_`x'_var staylow_`x'_var
+
+
+		}
+		*
+
+		
+log close
+	quietly {
+	log using phases_results, append text
+
+
+noisily: display ""
+noisily: display ""
+noisily: display "Metrics staying low"
+noisily: display "1. Pain"
+noisily: display "2. Spiritual / Psychosocial"
+noisily: display "3. Other symptoms"
+noisily: display "4. Caregiver issues"
+
+
+foreach x in   pain   spirit other  carer   {
+
+noisily: display ""
+noisily: display ""
+noisily: display "`x': Percentage who stayed at low level"
+noisily: 	dis %4.1f  perc_`x'_staylow * 100 "%"
+	
+noisily: display ""
+noisily: display ""
+noisily: display "`x': Raheny: Percentage who stayed at low level"
+noisily: 	dis %4.1f  perc_`x'_staylow_rah * 100 "%"
+
+noisily: display ""
+noisily: display ""
+noisily: display "`x': Blanch: Percentage who stayed at low level"
+noisily: 	dis %4.1f  perc_`x'_staylow_bla * 100 "%"
+	
+	
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		
+	}
+log close
+	}
+	*
+log using phases_analysis, append text
+

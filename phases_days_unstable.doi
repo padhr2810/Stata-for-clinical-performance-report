@@ -1,0 +1,281 @@
+
+
+**************************************************************
+************************************************************** STEP 12: days in unstable phase
+**************************************************************
+
+
+**************************************************************   NB NEED TO IMPORT DATA AGAIN.
+clear
+import excel "phases.xlsx", sheet("phases") firstrow
+
+gen 	Date_elapsed = Date
+format  Date_elapsed %10.0g
+
+
+**************************************************************  NUMBER OF PATIENTS TOTAL:
+by MRN, sort: gen num_of_patients = _n == 1
+replace num_of_patients = sum(num_of_patients)	/*CUMULATIVE SUM*/
+replace num_of_patients = num_of_patients[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+
+summ num_of_patients
+scalar number_of_patients = r(mean)
+dis number_of_patients
+
+
+**************************************************************  RECALCULATE THE NUMBER OF PATIENTS IN EACH SITE:
+
+** RAHENY:
+by MRN, sort: gen num_of_patients_rah = _n == 1
+	replace num_of_patients_rah = 0 if Hospice != "Raheny"
+replace num_of_patients_rah = sum(num_of_patients_rah)	/*CUMULATIVE SUM*/
+replace num_of_patients_rah = num_of_patients_rah[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+summ num_of_patients_rah
+scalar number_of_patients_rah = r(mean)
+dis number_of_patients_rah
+
+
+** BLANCH:
+by MRN, sort: gen num_of_patients_bla = _n == 1
+	replace num_of_patients_bla = 0 if Hospice != "Blanch"
+replace num_of_patients_bla = sum(num_of_patients_bla)	/*CUMULATIVE SUM*/
+replace num_of_patients_bla = num_of_patients_bla[_N]		/*PICK UP LAST VALUE AS OUR ANSWER*/
+summ num_of_patients_bla
+scalar number_of_patients_bla = r(mean)
+dis number_of_patients_bla
+
+
+
+
+************************************************************** SORT
+sort MRN Date_elapsed
+
+gen unstable = Phase == 2
+
+**************************************************************  IDENTIFY THE LAST DATE OF THE PHASES DATASET
+summ Date_elapsed
+	gen last_date_of_phases_dataset = r(max)
+	
+	
+************************************************************** ROW BY ROW: NO. DAYS FOR EACH UNSTABLE MEASUREMENT
+gen days_unstable_row_by_row  =  0
+	replace days_unstable_row_by_row  =  Date_elapsed[_n+1]  -  Date_elapsed ///
+			if MRN  ==  MRN[_n+1]   ///
+			   &  unstable  ==  1
+	replace days_unstable_row_by_row  =  last_date_of_phases_dataset   -  Date_elapsed ///
+			if MRN  !=  MRN[_n+1]   ///
+			   &  unstable  ==  1
+
+**************************************************************  DISTINGUISH EACH BATCH OF UNSTABLES (I.E. IN SEQUENCE PER PATIENT)
+gen first_unstable_in_series  =  unstable == 1 ///
+								&  ( unstable[_n-1]  !=  1  |  MRN[_n-1]  !=  MRN)
+gen unstab_series			  =  sum(first_unstable_in_series)
+
+
+**************************************************************  ADD UP NUMBER OF DAYS IN A ROW FOR EACH PX.
+bysort MRN  unstab_series:  egen days_unstable_each_time  =  sum( days_unstable_row_by_row )
+
+sort unstab_series   MRN   Date_elapsed
+by unstab_series: drop if _n > 1
+	drop if unstab_series  == 0  
+	
+sort MRN  Date_elapsed
+by MRN: egen longest_unstab_per_px  = max( days_unstable_each_time )
+
+by MRN: drop if _n  >  1
+
+scalar num_over_three_days = _N
+
+
+gen rah = 0
+	replace rah = 1 if Hospice == "Raheny"
+	summ rah
+	scalar num_over_three_days_rah = r(sum)
+gen bla = 0
+	replace bla = 1 if Hospice == "Blanch"
+	summ bla
+	scalar num_over_three_days_bla = r(sum)	
+
+
+**************************************************************  SUMMARY STATISTICS
+
+gen unstab_over_3_days  =  longest_unstab_per_px  > 3
+	egen num_px_unstab_over_3_days  =  sum(unstab_over_3_days)
+gen unstab_over_3_days_bla  =  longest_unstab_per_px  > 3   if Hospice == "Blanch"
+	egen num_px_unstab_over_3_days_bla  =  sum(unstab_over_3_days_bla)
+gen unstab_over_3_days_rah  =  longest_unstab_per_px  > 3   if Hospice == "Raheny"
+	egen num_px_unstab_over_3_days_rah  =  sum(unstab_over_3_days_rah)
+
+gen percentage_3_unstable      =   100 - (  100 *  (  num_px_unstab_over_3_days      /  num_over_three_days )    )
+gen percentage_3_unstable_bla  =   100 - (  100 *  (  num_px_unstab_over_3_days_bla  /  num_over_three_days_bla ) )
+gen percentage_3_unstable_rah  =   100 - (  100 *  (  num_px_unstab_over_3_days_rah  /  num_over_three_days_rah ) )
+
+		dis percentage_3_unstable
+		dis percentage_3_unstable_bla
+		dis percentage_3_unstable_rah
+		
+
+		
+************************************************
+************************************************ PHASES RESULTS STEP 12
+************************************************
+
+
+dis number_of_patients_bla
+dis number_of_patients_rah
+dis number_of_patients
+
+dis  num_px_unstab_over_3_days_bla
+dis  num_px_unstab_over_3_days_rah
+dis  num_px_unstab_over_3_days
+
+dis num_over_three_days_bla
+dis num_over_three_days_rah
+dis num_over_three_days
+
+
+
+log close
+quietly {
+log using phases_results, append text
+
+
+************************************************ STEP 12: days in unstable phase
+		noisily: dis ""
+		noisily: dis "DAYS IN UNSTABLE PHASE"
+	
+		noisily: dis ""
+		noisily: dis "Percentage in unstable phase for 3 days or less"
+		noisily: dis %4.2f percentage_3_unstable
+		
+		noisily: dis ""
+		noisily: dis "Percentage in unstable phase for 3 days or less: Blanchardstown"
+		noisily: dis %4.2f percentage_3_unstable_bla
+
+		noisily: dis ""
+		noisily: dis "Percentage in unstable phase for 3 days or less: Raheny"		
+		noisily: dis %4.2f percentage_3_unstable_rah
+
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+		noisily: dis ""
+
+log close
+	}
+	*
+log using phases_analysis, append text
+
+
+
+
+/*
+**************************************************************
+**************************************************************  IDENTIFY FIRST "UNSTABLE" CONSULTATION IN AN UNSTABLE EPISODE:
+**************************************************************
+
+
+************************************************************** SORT
+sort MRN Date_elapsed
+
+**************************************************************  IDENTIFY THE LAST DATE OF THE PHASES DATASET
+summ Date_elapsed
+	gen last_date_of_phases_dataset = r(max)
+
+**************************************************************  DATE OF NEXT CONSULTATION: ADD TO EACH ROW (BUT NOT IF LAST CONSULT FOR A PERSON)
+gen date_next_consult =  Date_elapsed[_n+1]  if MRN == MRN[_n+1]
+
+**************************************************************  DATE OF LAST CONSULTATION
+gen date_last_consult =   MRN != MRN[_n+1]
+
+**************************************************************  IDENTIFY "UNSTABLE" CONSULTATIONS
+gen unstable = Phase == 2
+
+**************************************************************  IDENTIFY CASES WHERE UNSTABLE PATIENT IS STILL UNSTABLE AT END OF MONTH
+gen unstable_to_months_end  =  unstable == 1  &  MRN  !=  MRN[_n+1]
+
+**************************************************************   IDENTIFY FIRST "UNSTABLE" IN A SERIES OF UNSTABLES
+gen first_in_episode = 0
+	replace first_in_episode = 1 if unstable == 1 & ( MRN != MRN[_n-1] | unstable[_n-1] != 1 )
+
+	
+**************************************************************  FILL IN THE BLANKS - BY CUMULATIVELY ADDING THE "first_in_episode" VARIABLES
+gen unstable_episode = sum(first_in_episode)
+	label var unstable_episode "Increase of 1 when new unstable episode"
+
+**************************************************************  GET RID OF THE STABLE EPISODES -- SO HAVE EXACT DURATION OF EACH UNSTABLE EPISODE
+	drop if unstable == 0	
+	
+**************************************************************  ONLY KEEP FIRST AND LAST IN EACH EPISODE 
+	gen drop = unstable_episode == unstable_episode[_n-1] ///
+				& unstable_episode == unstable_episode[_n+1]
+		drop if drop == 1	
+		drop drop
+
+sort  unstable_episode  Date_elapsed
+by unstable_episode:  gen  only_unstable_one_time  =  _N == 1
+
+
+**************************************************************
+************************************************************** work out number of days in each unstable episode:		
+**************************************************************
+
+gen days_unstable = 0
+**************************************************************    IE ONLY SUBTRACT FROM SAME EPISODE OBVIOUSLY
+replace days_unstable = Date_elapsed[_n] - Date_elapsed[_n-1] ///
+		if unstable_episode[_n] == unstable_episode[_n-1]	
+		
+		
+
+**************************************************************   I.E. IN CASE >1 EPISODE. JUST KEEP LONGEST
+bysort MRN: egen metric_days_unstable  = max(days_unstable)		
+by 	   MRN: drop if _n > 1
+	summ metric_days_unstable
+
+**************************************************************   THE 4 SCALAR NUMBERS REQUIRED:
+	scalar mean_days_unstable = r(mean)
+**************************************************************   #1: I.E. IT'S ONLY FOR THOSE WHO HAD AT LEAST 1 UNSTABLE EPISODE
+		dis mean_days_unstable		
+**************************************************************   #2: NUMBER OF PATIENTS WHO HAD AN UNSTABLE.
+	scalar number_patients_unstable = _N
+		dis number_patients_unstable
+
+**************************************************************   #3: ABSOLUTE NUMBER UNSTABLE FOR > 3 DAYS.
+gen over_three_days_unstable = metric_days_unstable > 3
+	
+	summ over_three_days_unstable	
+		scalar num_over_three_days = r(sum)
+			tab over_three_days_unstable	
+		dis num_over_three_days		
+**************************************************************   #4:  % UNSTABLE FOR 3 OR LESS DAYS
+	scalar percentage_3_unstable =  100 * (num_of_patients - num_over_three_days) / num_of_patients
+		dis percentage_3_unstable	
+
+
+**************************************************************
+**************************************************************  RAHENY METRIC:
+**************************************************************
+
+summ over_three_days_unstable if Hospice == "Raheny"
+	scalar num_over_three_days_rah = r(sum)
+		tab over_three_days_unstable if Hospice == "Raheny"	
+		dis num_over_three_days_rah		/*	#3  */
+	scalar percentage_3_unstable_rah =  100 * (number_of_patients_rah - num_over_three_days_rah) / number_of_patients_rah
+		dis percentage_3_unstable_rah
+
+**************************************************************
+**************************************************************  BLANCH METRIC:
+**************************************************************
+
+summ over_three_days_unstable if Hospice == "Blanch"
+	scalar num_over_three_days_bla = r(sum)
+		tab over_three_days_unstable if Hospice == "Blanch"	
+		dis num_over_three_days_bla		/*	#3  */
+	scalar percentage_3_unstable_bla =  100 * (number_of_patients_bla - num_over_three_days_bla) / number_of_patients_bla
+		dis percentage_3_unstable_bla
+
+*/		
+

@@ -1,0 +1,36 @@
+
+noisily: dis ""
+noisily: dis  "DAYS IN SERVICE"
+noisily: dis ""
+noisily: dis  "I: MEAN DAYS IN SERVICE"
+
+noisily: dis ""
+noisily: dis "Mean number of days in service"
+noisily: dis %3.1f  los_mean
+
+noisily: dis ""
+noisily: dis "Mean number of days in service: Raheny"
+noisily: dis %3.1f  los_mean_rah
+
+
+noisily: dis ""
+noisily: dis "Mean number of days in service: Blanchardstown"
+noisily: dis %3.1f  los_mean_bla
+
+
+
+noisily: dis ""
+noisily: dis  "II: MEDIAN DAYS IN SERVICE: BETTER MEASURE, LESS VULNERABLE TO OUTLIERS"
+
+noisily: dis ""
+noisily: dis "Median number of days in service"
+noisily: dis %3.1f  los_median
+
+noisily: dis ""
+noisily: dis "Median number of days in service: Raheny"
+noisily: dis %3.1f  los_median_rah
+
+
+noisily: dis ""
+noisily: dis "Median number of days in service: Blanchardstown"
+noisily: dis %3.1f  los_median_bla

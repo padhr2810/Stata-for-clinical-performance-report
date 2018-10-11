@@ -1,0 +1,69 @@
+********************************************************************* OTHER PROBLEM SCORE:
+rename Other  other
+rename Pain   pain
+rename Spirit spirit 
+rename Carer  carer
+
+gen tpss = pain + other + spirit + carer
+
+bysort MRN: gen n = _n == 1
+
+foreach x in pain other spirit carer  tpss  {
+
+********************************************************************* MEAN SCORE ACROSS ALL CONSULTATIONS:
+
+tab `x'
+** TOTAL:
+summ `x'
+scalar mean_`x'_score = r(mean)
+dis mean_`x'_score
+** RAHENY:
+summ `x' if Hospice == "Raheny"
+scalar mean_`x'_score_rah = r(mean)
+dis mean_`x'_score_rah
+** BLANCH:
+summ `x' if Hospice == "Blanch"
+scalar mean_`x'_score_bla = r(mean)
+dis mean_`x'_score_bla
+
+********************************************************************* MEAN SCORE PER PATIENT (I.E. CALCULATE IT PER PATIENT FIRST, THEN DIVIDE BY 'N'):
+
+*** MEAN PER PATIENT (TOTAL):
+bysort MRN: egen `x'_mean_patient = mean(`x')
+	
+		replace `x'_mean_patient = 0 if n != 1
+			summ `x'_mean_patient
+			drop `x'_mean_patient
+			scalar `x'_agg_patient = r(sum)
+				scalar `x'_mean = `x'_agg_patient / number_of_patients
+				dis `x'_mean
+*** MEAN PER PATIENT (RAHENY):
+bysort MRN: egen `x'_mean_patient = mean(`x')
+		replace `x'_mean_patient = 0 if n != 1 | Hospice != "Raheny"
+			summ `x'_mean_patient
+			drop `x'_mean_patient
+			scalar `x'_agg_patient_rah = r(sum)
+				scalar `x'_mean_rah = `x'_agg_patient_rah / number_of_patients_rah
+				dis `x'_mean_rah
+*** MEAN PER PATIENT (BLANCH):
+bysort MRN: egen `x'_mean_patient = mean(`x')
+		replace `x'_mean_patient = 0 if n != 1 | Hospice != "Blanch"
+			summ `x'_mean_patient
+			drop `x'_mean_patient
+			scalar `x'_agg_patient_bla = r(sum)
+				scalar `x'_mean_bla = `x'_agg_patient_bla / number_of_patients_bla
+				dis `x'_mean_bla
+			
+*** MEAN `x' SCORE ACROSS EVERY VISIT:
+dis mean_`x'_score
+dis mean_`x'_score_rah
+dis mean_`x'_score_bla
+*** MEAN `x' SCORE PER PATIENT (I.E. FIRST CALCULATE MEAN FOR EACH PATIENT):		
+dis `x'_mean
+dis `x'_mean_rah
+dis `x'_mean_bla
+
+	}
+	*
+	
+	
